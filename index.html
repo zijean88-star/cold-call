@@ -7340,6 +7340,37 @@ if (!e.target.closest(".search-wrap")) {
 document.getElementById("search-results").style.display = "none";
 }
 });
+
+function searchCompany(){
+var q=document.getElementById('searchInput').value.trim().toLowerCase();
+var r=document.getElementById('search-results');
+if(q.length<1){r.innerHTML='';r.style.display='none';return;}
+var cards=document.querySelectorAll('details.company-card, details[class*="card"]');
+var matches=[];
+cards.forEach(function(card){
+var text=card.textContent.toLowerCase();
+if(text.indexOf(q)>-1){
+var summary=card.querySelector('summary');
+var name=card.querySelector('.cname')?card.querySelector('.cname').textContent:'';
+var info=card.querySelector('.cinfo')?card.querySelector('.cinfo').textContent:'';
+var note=card.querySelector('.cnote')?card.querySelector('.cnote').textContent:'';
+var tags='';
+card.querySelectorAll('.tag').forEach(function(t){tags+=t.textContent+' ';});
+matches.push({name:name,info:info,note:note,tags:tags,el:card});
+}
+});
+if(matches.length===0){r.innerHTML='<div style="padding:12px;text-align:center;color:#7A7462;font-size:12px">找不到符合「'+q+'」的公司</div>';r.style.display='block';return;}
+var h='';
+matches.forEach(function(m){
+h+='<div style="padding:10px;border-bottom:1px solid #eee;cursor:pointer" onclick="this.querySelector(\'details\')&&this.querySelector(\'details\').open=!this.querySelector(\'details\').open">';
+h+='<strong>'+m.name+'</strong> <span style="font-size:11px;color:#666">'+m.tags+'</span>';
+h+='<div style="font-size:11px;color:#555">'+m.info+'</div>';
+if(m.note)h+='<div style="font-size:11px;color:#8B6914;margin-top:4px">'+m.note+'</div>';
+h+='</div>';
+});
+r.innerHTML=h;
+r.style.display='block';
+}
 </script>
 </body>
 </html>
