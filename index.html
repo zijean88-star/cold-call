@@ -7217,13 +7217,62 @@ history"><div class="note-entry"><span class="note-date">8/13</span> 先說找�
 </div>
 </div>
 <script>
+
 function saveRecord(btn) {
-btn.textContent = "✓ 已儲存";
-btn.style.background = "#C6F6D5";
-btn.style.color = "#276749";
-btn.style.borderColor = "#9AE6B4";
-btn.disabled = true;
-setTimeout(function(){ btn.disabled = false; }, 3000);
+  // 找到這個按鈕所在的表單
+  var form = btn.closest('.edit-form');
+  var inputs = form.querySelectorAll('input, select, textarea');
+  
+  // 收集 AI 模型勾選
+  var aiModels = [];
+  form.querySelectorAll('.ai-checkboxes input[type="checkbox"]:checked').forEach(function(cb) {
+    aiModels.push(cb.nextElementSibling.textContent);
+  });
+  
+  // 組合資料
+  var data = {
+    公司名稱: form.querySelector('input[name="company_name"]') ? form.querySelector('input[name="company_name"]').value : "",
+    地址: "",
+    電話: form.querySelector('input[type="tel"]') ? form.querySelector('input[type="tel"]').value : "",
+    聯絡人: form.querySelectorAll('input[type="text"]')[1] ? form.querySelectorAll('input[type="text"]')[1].value : "",
+    email: form.querySelectorAll('input[type="text"]')[2] ? form.querySelectorAll('input[type="text"]')[2].value : "",
+    狀態: form.querySelector('select') ? form.querySelector('select').value : "",
+    AI使用: form.querySelectorAll('select')[1] ? form.querySelectorAll('select')[1].value : "",
+    AI模型: aiModels.join(", "),
+    雲端廠商: form.querySelectorAll('select')[2] ? form.querySelectorAll('select')[2].value : "",
+    備註: form.querySelector('textarea') ? form.querySelector('textarea').value : ""
+  };
+  
+  // 改變按鈕狀態
+  btn.textContent = "⏳ 儲存中...";
+  btn.disabled = true;
+  
+  // 發送到 Google Sheets
+  // ⬇️⬇️⬇️ 把下面這個網址換成你第三步拿到的網址 ⬇️⬇️⬇️
+  var API_URL = "https://script.google.com/macros/s/你的部署網址貼這裡/exec";
+  
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(result) {
+    if (result.status === "updated") {
+      btn.textContent = "✓ 已更新（重複電話）";
+      btn.style.background = "#FED7AA";
+      btn.style.color = "#92501E";
+    } else {
+      btn.textContent = "✓ 已儲存";
+      btn.style.background = "#C6F6D5";
+      btn.style.color = "#276749";
+    }
+  })
+  .catch(function(err) {
+    btn.textContent = "❌ 儲存失敗，請重試";
+    btn.style.background = "#FED7D7";
+    btn.style.color = "#9B2C2C";
+    btn.disabled = false;
+  });
 }
 function doSearch(q) {
 var box = document.getElementById("search-results");
